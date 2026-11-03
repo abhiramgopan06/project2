@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}About Us | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-3">About Us</h1>
+            <p class="text-muted">
+                Rental Platform is a simple web application built with Django and Bootstrap
+                to help property owners and tenants connect with each other.
+            </p>
+
+            <h4 class="fw-bold mt-4">Who we are</h4>
+            <p>
+                We are a small student project made to practice full stack web development.
+                Our goal is to make renting a property easier for both owners and tenants,
+                by giving them one place to list properties, send booking requests, make
+                payments and raise maintenance tickets.
+            </p>
+
+            <h4 class="fw-bold mt-4">What we offer</h4>
+            <ul>
+                <li>Easy property listing for owners</li>
+                <li>Simple booking requests for tenants</li>
+                <li>Basic payment and maintenance tracking</li>
+                <li>Separate dashboards for owners, tenants and admins</li>
+            </ul>
+
+            <h4 class="fw-bold mt-4">Contact</h4>
+            <p class="mb-0">Email: support@rentalplatform.com</p>
+            <p>Phone: +91 98765 43210</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

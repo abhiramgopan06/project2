@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} | Rental Platform{% endblock %}
+{% block content %}<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-7"><div class="card border-0 shadow-sm p-4 p-lg-5"><span class="badge text-bg-primary align-self-start">{{ property.title }}</span><h1 class="fw-bold mt-2">{{ page_title }}</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save Room</button><a class="btn btn-outline-secondary ms-2" href="{% url 'properties:owner_property_detail' property.pk %}">Cancel</a></form></div></div></div></div>{% endblock %}

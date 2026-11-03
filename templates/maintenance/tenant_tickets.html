@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My Maintenance Requests{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h1>🔧 My Maintenance Requests</h1><p class="text-muted">Track issues raised for your rental.</p></div>
+    <a class="btn btn-primary" href="{% url 'maintenance:create_ticket' %}">+ New Request</a>
+  </div>
+  {% if tickets %}
+  <div class="row g-4">
+    {% for ticket in tickets %}
+    <div class="col-md-6 col-xl-4"><div class="card h-100 shadow-sm ticket-card priority-{{ ticket.priority|lower }}"><div class="card-body">
+      <div class="d-flex justify-content-between"><h5>{{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div>
+      <p class="text-muted mb-1">{{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p>{% if ticket.scheduled_for %}<p class="small text-primary mb-2"><i class="bi bi-calendar-event me-1"></i>Technician visit: {{ ticket.scheduled_for|date:"d M Y, h:i A" }}</p>{% endif %}
+      <p>{{ ticket.description|truncatechars:120 }}</p>
+      <span class="badge {% if ticket.priority == 'EMERGENCY' %}bg-danger{% elif ticket.priority == 'HIGH' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">{{ ticket.get_priority_display }}</span>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'maintenance:ticket_detail' ticket.pk %}">View & Message Technician</a>
+        {% if ticket.status == 'RESOLVED' %}<form method="post" action="{% url 'maintenance:tenant_finish_ticket' ticket.pk %}">{% csrf_token %}<button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Confirm that the technician finished the work?');">Work Finished</button></form>{% endif %}
+      </div>
+    </div></div></div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="alert alert-info">No maintenance requests yet.</div>{% endif %}
+</div>
+{% endblock %}

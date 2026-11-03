@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Delete Room | Rental Platform{% endblock %}
+{% block content %}<div class="container py-5"><div class="row justify-content-center"><div class="col-md-6"><div class="card border-0 shadow-sm p-4 text-center"><h2>Delete Room {{ room.room_number }}?</h2><p class="text-secondary">This will remove the room from <strong>{{ property.title }}</strong>.</p><form method="post">{% csrf_token %}<button class="btn btn-danger">Yes, Delete</button><a class="btn btn-outline-secondary" href="{% url 'properties:owner_property_detail' property.pk %}">Cancel</a></form></div></div></div></div>{% endblock %}

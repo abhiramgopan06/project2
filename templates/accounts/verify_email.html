@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Verify Email | Rental Platform{% endblock %}
+{% block content %}
+<div class="auth-page py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-5 col-xl-4">
+        <div class="auth-card card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            {% include "accounts/_auth_steps.html" with step=2 %}
+            <div class="auth-heading text-center mb-4">
+              <div class="auth-icon"><i class="bi bi-envelope-paper"></i></div>
+              <h2 class="fw-bold mb-2">Check your email</h2>
+              <p class="text-secondary mb-1">We sent a 6-digit code to</p>
+              <p class="fw-semibold mb-0 text-break">{{ masked_email }}</p>
+            </div>
+
+            {% if console_email %}
+            <div class="alert alert-info small py-2">
+              <i class="bi bi-terminal me-1"></i><strong>Testing mode:</strong> real email is not set up, so the code is printed in the terminal where <code>runserver</code> is running.
+            </div>
+            {% endif %}
+
+            {% if locked %}
+              <div class="alert alert-warning small"><i class="bi bi-exclamation-triangle me-1"></i>Too many wrong attempts. Please request a new code below.</div>
+            {% elif expired %}
+              <div class="alert alert-warning small"><i class="bi bi-clock-history me-1"></i>This code has expired. Please request a new code below.</div>
+            {% else %}
+            <form method="post" novalidate>
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="otp">Verification code</label>
+                <input class="form-control form-control-lg text-center otp-input" id="otp" name="otp" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="••••••" required autofocus>
+                <div class="form-text text-center">Valid for {{ expiry_minutes }} minutes &middot; {{ attempts_left }} attempt{{ attempts_left|pluralize }} left</div>
+              </div>
+              <button class="btn btn-primary w-100 auth-submit" type="submit"><i class="bi bi-check2-circle me-2"></i>Verify email</button>
+            </form>
+            {% endif %}
+
+            <div class="resend-box text-center mt-4">
+              <span class="small text-secondary">Didn't get the code?</span>
+              <form method="post" class="d-inline" id="resend-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="resend">
+                <button class="btn btn-link btn-sm p-0 ms-1 align-baseline" type="submit" id="resend-btn" data-wait="{{ resend_wait }}" {% if resend_wait %}disabled{% endif %}>
+                  <i class="bi bi-arrow-repeat me-1"></i><span id="resend-label">{% if resend_wait %}Resend OTP in {{ resend_wait }}s{% else %}Resend OTP{% endif %}</span>
+                </button>
+              </form>
+            </div>
+            <p class="text-center small text-secondary mt-3 mb-0">Wrong email address? <a href="{% url 'accounts:register' %}">Register again</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  var otp = document.getElementById("otp");
+  if (otp) {
+    // keep only digits, and submit automatically when 6 digits are typed or pasted
+    otp.addEventListener("input", function () {
+      otp.value = otp.value.replace(/\D/g, "").slice(0, 6);
+      if (otp.value.length === 6) otp.form.submit();
+    });
+  }
+  var btn = document.getElementById("resend-btn");
+  var label = document.getElementById("resend-label");
+  var left = parseInt(btn.dataset.wait, 10) || 0;
+  if (left > 0) {
+    var timer = setInterval(function () {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(timer);
+        btn.disabled = false;
+        label.textContent = "Resend OTP";
+      } else {
+        label.textContent = "Resend OTP in " + left + "s";
+      }
+    }, 1000);
+  }
+})();
+</script>
+{% endblock %}

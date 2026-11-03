@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Saved Properties | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4"><span class="section-kicker">Your shortlist</span><h1 class="fw-bold">Saved properties</h1><p class="text-secondary">Keep the places you like together while you compare your options.</p></div>
+    <div class="row g-4">
+        {% for saved in saved_properties %}{% with property=saved.property %}
+        <div class="col-md-6 col-xl-4"><div class="card property-card h-100 border-0 shadow-sm overflow-hidden">{% if property.primary_image %}<img src="{{ property.primary_image.image.url }}" class="property-cover" alt="{{ property.title }}">{% else %}<div class="property-placeholder"><i class="bi bi-house-door"></i></div>{% endif %}<div class="card-body d-flex flex-column p-4"><div class="d-flex justify-content-between gap-2"><span class="badge bg-body-secondary text-body">{{ property.get_property_type_display }}</span>{% if property.verification_status == "VERIFIED" %}<span class="verified-label"><i class="bi bi-patch-check-fill"></i> Verified</span>{% endif %}</div><h2 class="h5 fw-bold mt-3">{{ property.title }}</h2><p class="text-secondary"><i class="bi bi-geo-alt me-1"></i>{{ property.location }}</p><div class="mt-auto d-flex justify-content-between align-items-center"><strong class="fs-5">₹{{ property.rent|floatformat:0 }}<small class="text-secondary fw-normal"> / month</small></strong><a class="btn btn-outline-primary" href="{% url 'properties:detail' property.pk %}">View details</a></div><form method="post" action="{% url 'properties:toggle_saved' property.pk %}" class="mt-2">{% csrf_token %}<input type="hidden" name="next" value="{% url 'properties:saved' %}"><button class="btn btn-outline-danger w-100" type="submit"><i class="bi bi-heartbreak me-1"></i>Remove saved property</button></form></div></div></div>
+        {% endwith %}{% empty %}<div class="col-12"><div class="empty-state-card text-center py-5"><i class="bi bi-heart fs-1"></i><h2 class="h4 mt-3">No saved properties yet</h2><p class="text-secondary">Browse listings and use the Save button to build your shortlist.</p><a class="btn btn-primary" href="{% url 'properties:list' %}">Explore properties</a></div></div>{% endfor %}
+    </div>
+</div>
+{% endblock %}

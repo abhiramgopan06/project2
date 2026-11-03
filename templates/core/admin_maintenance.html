@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Maintenance Work | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="badge text-bg-primary">PLATFORM CONTROLS</span>
+      <h1 class="fw-bold mt-2">Maintenance Work</h1>
+      <p class="text-secondary mb-0">Every repair issue tenants have reported.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'core:admin_dashboard' %}">&larr; Dashboard</a>
+  </div>
+
+  <form class="card border-0 shadow-sm p-3 mb-4" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          {% for value, label in statuses %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+    </div>
+  </form>
+
+  <h2 class="fw-bold mt-5 mb-3">Technician Reports</h2>
+  <div class="card border-0 shadow-sm mb-4"><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Technician</th><th>Subject</th><th>Related Job</th><th>Details</th><th>Status</th><th>Date</th></tr></thead><tbody>
+  {% for report in technician_reports %}<tr><td>{{ report.technician.name }}</td><td>{{ report.subject }}</td><td>{% if report.ticket %}#{{ report.ticket.pk }} {{ report.ticket.title }}{% else %}General{% endif %}</td><td>{{ report.description|truncatechars:180 }}</td><td><span class="badge text-bg-warning">{{ report.get_status_display }}</span></td><td>{{ report.created_at|date:"d M Y" }}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">No technician reports yet.</td></tr>{% endfor %}</tbody></table></div></div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Tenant</th><th>Property</th><th>Title</th><th>Priority</th><th>Status</th><th>Technician</th><th>Reported</th></tr>
+        </thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td><a href="{% url 'core:admin_user_detail' ticket.tenant.pk %}">{{ ticket.tenant.username }}</a></td>
+            <td><a href="{% url 'core:admin_property_detail' ticket.property.pk %}">{{ ticket.property.title }}</a></td>
+            <td>{{ ticket.title }}</td>
+            <td>{{ ticket.get_priority_display }}</td>
+            <td><span class="badge {% if ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' %}text-bg-success{% elif ticket.status == 'OPEN' %}text-bg-danger{% else %}text-bg-warning{% endif %}">{{ ticket.get_status_display }}</span></td>
+            <td>{{ ticket.technician.name|default:"Unassigned" }}</td>
+            <td>{{ ticket.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-secondary py-5">No maintenance work requests found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

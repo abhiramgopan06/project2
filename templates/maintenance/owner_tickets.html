@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Maintenance Management{% endblock %}
+{% block content %}
+<div class="container py-5"><div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"><div><h1>🔧 Maintenance Management</h1><p class="text-muted mb-0">Review, assign and close tenant issues.</p></div><a class="btn btn-outline-primary" href="{% url 'maintenance:technicians' %}">Manage Technicians</a></div>
+<div class="table-responsive"><table class="table table-hover bg-body shadow-sm"><thead><tr><th>#</th><th>Issue</th><th>Tenant</th><th>Property</th><th>Priority</th><th>Status</th><th>Technician</th><th>Scheduled visit</th><th>Action</th></tr></thead><tbody>
+{% for ticket in tickets %}<tr><td>{{ ticket.pk }}</td><td><a href="{% url 'maintenance:ticket_detail' ticket.pk %}">{{ ticket.title }}</a></td><td>{{ ticket.tenant.username }}</td><td>{{ ticket.property.title }}</td><td>{{ ticket.get_priority_display }}</td><td><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></td><td>{% if ticket.technician %}{{ ticket.technician.name }}{% else %}Unassigned{% endif %}</td><td>{{ ticket.scheduled_for|date:"d M Y, h:i A"|default:"Not scheduled" }}</td><td>{% if ticket.status == 'OPEN' or ticket.status == 'ASSIGNED' %}<a class="btn btn-sm btn-primary" href="{% url 'maintenance:assign_ticket' ticket.pk %}">Assign</a>{% elif ticket.status == 'RESOLVED' %}<form method="post" action="{% url 'maintenance:close_ticket' ticket.pk %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-sm btn-success">Close</button></form>{% else %}-{% endif %}</td></tr>{% empty %}<tr><td colspan="9" class="text-center py-4">No maintenance requests.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

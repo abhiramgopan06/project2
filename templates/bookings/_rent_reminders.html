@@ -1,0 +1,11 @@
+
+{% for reminder in rent_reminders %}
+<div class="border border-warning-subtle bg-warning-subtle rounded-3 p-3 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+        🔔 <strong>Rent reminder:</strong> ₹{{ reminder.amount|floatformat:2 }} for <strong>{{ reminder.booking.property.title }}</strong>
+        is due {% if reminder.days_left == 0 %}<strong>today</strong>{% elif reminder.days_left == 1 %}<strong>tomorrow</strong>{% else %}in <strong>{{ reminder.days_left }} days</strong>{% endif %}
+        ({{ reminder.due_date|date:"d M Y" }}).
+    </div>
+    {% if show_link %}<a href="{% url 'bookings:my_bookings' %}" class="btn btn-sm btn-warning">View bookings</a>{% endif %}
+</div>
+{% endfor %}

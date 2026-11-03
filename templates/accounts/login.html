@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Login | Rental Platform{% endblock %}
+{% block content %}
+<div class="auth-page py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-5 col-xl-4">
+        <div class="auth-card card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="auth-heading text-center mb-4">
+              <div class="auth-icon"><i class="bi bi-box-arrow-in-right"></i></div>
+              <h2 class="fw-bold mb-2">Welcome back</h2>
+              <p class="text-secondary mb-0">Sign in to continue.</p>
+            </div>
+            <form method="post" novalidate>
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="id_username">Username</label>
+                <div class="input-group auth-input">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input class="form-control" id="id_username" type="text" name="username" value="{{ prefill_username }}" placeholder="Your username" autocomplete="username" required {% if not prefill_username %}autofocus{% endif %}>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-semibold" for="id_password">Password</label>
+                <div class="input-group auth-input">
+                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                  <input class="form-control" id="id_password" type="password" name="password" placeholder="Your password" autocomplete="current-password" required {% if prefill_username %}autofocus{% endif %}>
+                  <button class="btn btn-toggle-password" type="button" data-toggle-password="id_password" aria-label="Show or hide password"><i class="bi bi-eye"></i></button>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 auth-submit" type="submit"><i class="bi bi-box-arrow-in-right me-2"></i>Login</button>
+            </form>
+            <p class="text-center mt-4 mb-0">Don't have an account? <a class="fw-semibold" href="{% url 'accounts:register' %}">Register</a></p>
+            <div class="auth-divider"><span>or</span></div>
+            {% include "accounts/_google_button.html" %}
+          </div>
+        </div>
+        <p class="text-center small text-secondary mt-3 mb-0"><i class="bi bi-shield-lock me-1"></i>Your information is encrypted and never shared.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

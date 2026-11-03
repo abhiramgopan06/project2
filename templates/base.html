@@ -1,0 +1,210 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Rental Property Management Platform built with Django.">
+    <script>
+        (function () {
+            var theme = "light";
+            try {
+                var saved = localStorage.getItem("theme");
+                if (saved === "light" || saved === "dark") {
+                    theme = saved;
+                } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                    theme = "dark";
+                }
+            } catch (e) {}
+            document.documentElement.setAttribute("data-bs-theme", theme);
+        })();
+    </script>
+    <title>{% block title %}Havenly{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+<nav class="navbar navbar-expand-xl bg-dark shadow-sm sticky-top site-navbar" data-bs-theme="dark">
+    <div class="container-xl">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'core:home' %}">
+            <span class="brand-icon"><i class="bi bi-house-heart-fill"></i></span><span>Havenly</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
+                {% if not user.is_authenticated or user.role != "TECHNICIAN" %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                        <i class="bi bi-house-door me-1"></i>Home
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if not user.is_authenticated or user.role == "TENANT" %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'list' or request.resolver_match.url_name == 'detail' %}active{% endif %}" href="{% url 'properties:list' %}">
+                        <i class="bi bi-buildings me-1"></i>Browse Properties
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                    {% if user.role == "TECHNICIAN" %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'maintenance:technician_history' %}"><i class="bi bi-clock-history me-1"></i>Work History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'maintenance:technician_report' %}"><i class="bi bi-flag me-1"></i>Report</a></li>
+                    {% endif %}
+                    {% if user.role == "TENANT" %}
+                        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'saved' %}active{% endif %}" href="{% url 'properties:saved' %}"><i class="bi bi-heart me-1"></i>Saved</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'my_requests' or request.resolver_match.url_name == 'my_bookings' or request.resolver_match.url_name == 'history' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-house-check me-1"></i>My Rental
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">Rental activity</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'bookings:my_requests' %}"><i class="bi bi-file-earmark-text me-2"></i>Requests</a></li>
+                                <li><a class="dropdown-item" href="{% url 'bookings:my_bookings' %}"><i class="bi bi-calendar-check me-2"></i>Bookings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'payments:history' %}"><i class="bi bi-credit-card me-2"></i>Payments</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'tenant_tickets' or request.resolver_match.url_name == 'my_reports' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-life-preserver me-1"></i>Support
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'maintenance:tenant_tickets' %}"><i class="bi bi-tools me-2"></i>Maintenance</a></li>
+                                <li><a class="dropdown-item" href="{% url 'core:my_reports' %}"><i class="bi bi-flag me-2"></i>My Reports</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'core:about' %}"><i class="bi bi-info-circle me-1"></i>About Us</a></li>
+
+                    {% elif user.role == "OWNER" %}
+                        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'owner_property_list' or request.resolver_match.url_name == 'owner_property_detail' %}active{% endif %}" href="{% url 'properties:owner_property_list' %}"><i class="bi bi-buildings me-1"></i>Properties</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'owner_requests' %}active{% endif %}" href="{% url 'bookings:owner_requests' %}"><i class="bi bi-person-check me-1"></i>Requests</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'bookings:owner_extensions' %}"><i class="bi bi-calendar2-plus me-1"></i>Extensions</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'bookings:owner_rentals' %}"><i class="bi bi-file-earmark-check me-1"></i>Agreements</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'properties:owner_expenses' %}"><i class="bi bi-receipt me-1"></i>Expenses</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'owner_tickets' or request.resolver_match.url_name == 'technicians' or request.resolver_match.url_name == 'technician_create' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-wrench-adjustable me-1"></i>Maintenance
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'maintenance:owner_tickets' %}"><i class="bi bi-clipboard-check me-2"></i>Maintenance Requests</a></li>
+                                <li><a class="dropdown-item" href="{% url 'maintenance:technicians' %}"><i class="bi bi-person-gear me-2"></i>Technicians</a></li>
+                            </ul>
+                        </li>
+
+                    {% elif user.role == "TECHNICIAN" %}
+                        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'technician_tickets' or request.resolver_match.url_name == 'start_ticket' or request.resolver_match.url_name == 'resolve_ticket' %}active{% endif %}" href="{% url 'maintenance:technician_tickets' %}"><i class="bi bi-tools me-1"></i>My Assigned Work</a></li>
+
+                    {% elif user.role == "ADMIN" or user.is_superuser %}
+                        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'core:admin_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>Admin Dashboard</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if 'admin_' in request.resolver_match.url_name %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-grid me-1"></i>Management
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end admin-menu">
+                                <li><h6 class="dropdown-header">Platform maintenance</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'core:admin_reports' %}"><i class="bi bi-flag me-2"></i>Reports</a></li>
+                                <li><a class="dropdown-item" href="{% url 'core:admin_users' %}"><i class="bi bi-people me-2"></i>Users</a></li>
+                                <li><a class="dropdown-item" href="{% url 'core:admin_properties' %}"><i class="bi bi-buildings me-2"></i>Properties</a></li>
+                                <li><a class="dropdown-item" href="{% url 'core:admin_rental_requests' %}"><i class="bi bi-file-earmark-text me-2"></i>Rental Requests</a></li>
+                                <li><a class="dropdown-item" href="{% url 'core:admin_payments' %}"><i class="bi bi-credit-card me-2"></i>Payments</a></li>
+                                <li><a class="dropdown-item" href="{% url 'core:admin_maintenance' %}"><i class="bi bi-tools me-2"></i>Maintenance</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'accounts:profile' %}"><i class="bi bi-person-circle me-1"></i>Profile</a></li>
+                    <li class="nav-item nav-action">
+                        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'accounts:login' %}">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-primary btn-sm ms-xl-2" href="{% url 'accounts:register' %}">Register</a></li>
+                {% endif %}
+
+                <li class="nav-item nav-action">
+                    <button type="button" id="theme-toggle" class="btn btn-outline-light btn-sm" title="Switch to dark mode" aria-label="Switch between light and dark mode">
+                        <i id="theme-icon" class="bi bi-moon-stars-fill"></i><span id="theme-label" class="d-xl-none ms-1">Dark mode</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main class="flex-grow-1">{% block content %}{% endblock %}</main>
+
+<footer class="py-5 mt-5 border-top bg-body site-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">HAVENLY</h6>
+                <ul class="list-unstyled">
+                    {% if user.is_authenticated and user.role == "TENANT" %}<li><a href="{% url 'core:about' %}">About Us</a></li>{% endif %}
+                    <li><a href="{% url 'core:home' %}">Home</a></li>
+                    {% if not user.is_authenticated or user.role == "TENANT" %}<li><a href="{% url 'properties:list' %}">Browse Properties</a></li>{% endif %}
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">FOR TENANTS</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'accounts:register' %}">How it works</a></li>
+                    <li><a href="{% url 'properties:list' %}">Find a property</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">FOR OWNERS</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'accounts:register' %}">List your property</a></li>
+                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">SUPPORT</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#"> +91 90610 76083</a></li>
+                    {% if user.is_authenticated and user.role == "TENANT" %}<li><a href="{% url 'core:about' %}">Contact us</a></li>{% endif %}
+                    <li>support@rentalplatform.com</li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">FOLLOW US</h6>
+                <div class="d-flex gap-3 fs-5">
+                    <a href="#" aria-label="Instagram" class="text-body"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="Twitter" class="text-body"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="Facebook" class="text-body"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="LinkedIn" class="text-body"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" aria-label="YouTube" class="text-body"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="text-center text-muted small">
+            &copy; {% now "Y" %} Havenly &mdash; All rights reserved
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/script.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

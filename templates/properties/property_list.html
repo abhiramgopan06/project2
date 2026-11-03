@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Browse Properties | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="badge text-bg-primary">Browse Rentals</span>
+            <h1 class="fw-bold mt-2 mb-1">Find your next property</h1>
+            <p class="text-secondary mb-0">Search available properties by location, type and rent.</p>
+        </div>
+        {% if user.is_authenticated and user.role == "OWNER" %}
+            <a class="btn btn-primary" href="{% url 'properties:create' %}">＋ Add Property</a>
+        {% endif %}
+    </div>
+
+    <form class="card shadow-sm border-0 p-3 mb-4" method="get">
+        <div class="row g-3">
+            <div class="col-lg-3">
+                <label class="form-label">Search</label>
+                <input class="form-control" name="q" value="{{ filters.q|default:'' }}" placeholder="Title, area, address...">
+            </div>
+            <div class="col-lg-2">
+                <label class="form-label">Location</label>
+                <input class="form-control" name="location" value="{{ filters.location|default:'' }}" placeholder="Kochi">
+            </div>
+            <div class="col-lg-2">
+                <label class="form-label">Property type</label>
+                <select class="form-select" name="property_type">
+                    <option value="">All types</option>
+                    {% for value,label in property_types %}
+                        <option value="{{ value }}" {% if filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <label class="form-label">Min rent (₹)</label>
+                <input class="form-control" type="number" name="min_rent" value="{{ filters.min_rent|default:'' }}" min="0" step="0.01">
+            </div>
+            <div class="col-lg-2">
+                <label class="form-label">Max rent (₹)</label>
+                <input class="form-control" type="number" name="max_rent" value="{{ filters.max_rent|default:'' }}" min="0" step="0.01">
+            </div>
+            <div class="col-lg-1 d-flex align-items-end">
+                <button class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+        <div class="row g-2 align-items-end mt-2">
+            <div class="col-sm-6 col-md-4">
+                <label class="form-label" for="sort-properties">Sort by</label>
+                <select class="form-select" id="sort-properties" name="sort" onchange="this.form.submit()">
+                    <option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest first</option>
+                    <option value="rent_low" {% if sort == "rent_low" %}selected{% endif %}>Rent: low to high</option>
+                    <option value="rent_high" {% if sort == "rent_high" %}selected{% endif %}>Rent: high to low</option>
+                    <option value="title" {% if sort == "title" %}selected{% endif %}>Property name</option>
+                </select>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+            <div>
+                {% if rent_error %}<span class="text-danger small">{{ rent_error }}</span>{% else %}<span class="text-secondary small">{{ result_count }} available propert{{ result_count|pluralize:"y,ies" }} found</span>{% endif %}
+            </div>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'properties:list' %}">Clear Filters</a>
+        </div>
+    </form>
+
+    <div class="row g-4">
+        {% for property in properties %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card property-card h-100 border-0 shadow-sm overflow-hidden">
+                {% if property.primary_image %}
+                    <img src="{{ property.primary_image.image.url }}" class="property-cover" alt="{{ property.title }}">
+                {% else %}
+                    <div class="property-placeholder">🏠</div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between gap-2 flex-wrap">
+                        <span class="badge bg-body-secondary text-body">{{ property.get_property_type_display }}</span>
+                        <span class="badge text-bg-success">Available</span>
+                    </div>
+                    {% if property.verification_status == "VERIFIED" %}<span class="verified-label mt-2"><i class="bi bi-patch-check-fill"></i> Verified listing</span>{% endif %}
+                    <h4 class="fw-bold mt-3">{{ property.title }}</h4>
+                    <p class="text-secondary mb-2">📍 {{ property.location }}</p>
+                    <p class="text-secondary property-desc">{{ property.description }}</p>
+                    <div class="small text-secondary mb-3">🛏 {{ property.rooms.count }} room{{ property.rooms.count|pluralize }} · {{ property.amenities.count }} amenit{{ property.amenities.count|pluralize:"y,ies" }}</div>
+                    <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
+                        <strong class="fs-5">₹{{ property.rent|floatformat:2 }}<small class="text-secondary fw-normal"> / month</small></strong>
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            {% if user.is_authenticated and user.role == "TENANT" %}
+                            <form method="post" action="{% url 'properties:toggle_saved' property.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-outline-secondary" type="submit" aria-label="Save property">{% if property.pk in saved_ids %}<i class="bi bi-heart-fill"></i> Saved{% else %}<i class="bi bi-heart"></i> Save{% endif %}</button></form>
+                            {% endif %}
+                            <a class="btn btn-outline-primary" href="{% url 'properties:detail' property.pk %}">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm p-5 text-center">
+                <div class="display-5 mb-3">🏠</div>
+                <h3>No available properties found</h3>
+                <p class="text-secondary">Try changing your search or rent filters.</p>
+                <a class="btn btn-primary" href="{% url 'properties:list' %}">View All Available Properties</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-5" aria-label="Property pages">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?{% if filters.q %}q={{ filters.q|urlencode }}&{% endif %}{% if filters.location %}location={{ filters.location|urlencode }}&{% endif %}{% if filters.property_type %}property_type={{ filters.property_type }}&{% endif %}{% if filters.min_rent %}min_rent={{ filters.min_rent }}&{% endif %}{% if filters.max_rent %}max_rent={{ filters.max_rent }}&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?{% if filters.q %}q={{ filters.q|urlencode }}&{% endif %}{% if filters.location %}location={{ filters.location|urlencode }}&{% endif %}{% if filters.property_type %}property_type={{ filters.property_type }}&{% endif %}{% if filters.min_rent %}min_rent={{ filters.min_rent }}&{% endif %}{% if filters.max_rent %}max_rent={{ filters.max_rent }}&{% endif %}sort={{ sort }}&page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?{% if filters.q %}q={{ filters.q|urlencode }}&{% endif %}{% if filters.location %}location={{ filters.location|urlencode }}&{% endif %}{% if filters.property_type %}property_type={{ filters.property_type }}&{% endif %}{% if filters.min_rent %}min_rent={{ filters.min_rent }}&{% endif %}{% if filters.max_rent %}max_rent={{ filters.max_rent }}&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

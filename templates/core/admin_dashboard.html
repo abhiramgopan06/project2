@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div><span class="badge text-bg-secondary">ADMIN CONTROL CENTER</span><h1 class="fw-bold mt-2 mb-1">Platform Dashboard</h1><p class="text-secondary mb-0">Monitor users, rentals, payments, maintenance and reports.</p></div>
+    <a class="btn btn-outline-secondary" href="{% url 'core:admin_reports' %}">⚠️ Property Reports{% if open_reports %} <span class="badge text-bg-danger">{{ open_reports }}</span>{% endif %}</a>
+  </div>
+  <div class="row g-3 mb-4">
+    {% for label,value in stats %}<div class="col-6 col-lg-3"><div class="stat-card h-100"><div class="text-secondary small">{{ label }}</div><div class="display-6 fw-bold">{{ value }}</div></div></div>{% endfor %}
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-8"><div class="card border-0 shadow-sm"><div class="card-body p-4"><div class="d-flex justify-content-between align-items-center mb-3"><h4 class="fw-bold mb-0">Recent Rentals</h4><a href="/admin/bookings/booking/" class="small">Open Django Admin</a></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Booking</th><th>Tenant</th><th>Property</th><th>Status</th></tr></thead><tbody>{% for booking in recent_bookings %}<tr><td>#{{ booking.pk }}</td><td>{{ booking.tenant.username }}</td><td>{{ booking.property.title }}</td><td><span class="badge text-bg-success">{{ booking.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-secondary">No bookings yet.</td></tr>{% endfor %}</tbody></table></div></div></div></div>
+    <div class="col-lg-4"><div class="card border-0 shadow-sm"><div class="card-body p-4"><h4 class="fw-bold">Platform Controls</h4><div class="d-grid gap-2 mt-3"><a class="btn btn-primary" href="{% url 'core:admin_users' %}">Manage Users</a><a class="btn btn-outline-secondary" href="{% url 'core:admin_properties' %}">Manage Properties</a><a class="btn btn-outline-secondary" href="{% url 'core:admin_rental_requests' %}">Rental Requests</a><a class="btn btn-outline-secondary" href="{% url 'core:admin_payments' %}">Payments</a><a class="btn btn-outline-secondary" href="{% url 'core:admin_maintenance' %}">Maintenance Work</a></div></div></div></div>
+  </div>
+  <div class="card border-0 shadow-sm mt-4"><div class="card-body p-4"><div class="d-flex justify-content-between align-items-center mb-3"><h4 class="fw-bold mb-0">Recent Property Reports</h4><a href="{% url 'core:admin_reports' %}">View all</a></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Property</th><th>Reporter</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>{% for report in recent_reports %}<tr><td>{{ report.property.title }}</td><td>{{ report.reporter.username }}</td><td>{{ report.get_reason_display }}</td><td>{{ report.get_status_display }}</td><td><a class="btn btn-sm btn-outline-primary" href="{% url 'core:admin_report_update' report.pk %}">Review</a></td></tr>{% empty %}<tr><td colspan="5" class="text-secondary">No property reports.</td></tr>{% endfor %}</tbody></table></div></div></div>
+</div>
+{% endblock %}

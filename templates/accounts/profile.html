@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}My Profile | Rental Platform{% endblock %}{% block content %}
+<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-7"><div class="card border-0 shadow-sm"><div class="card-body p-4 p-md-5">
+<h2 class="fw-bold">My Profile</h2><div class="d-flex align-items-center gap-3 mb-4">{% if request.user.profile_image %}<img src="{{ request.user.profile_image.url }}" class="profile-avatar" alt="Profile">{% else %}<div class="profile-avatar placeholder-avatar">{{ request.user.username|first|upper }}</div>{% endif %}<div><strong>{{ request.user.get_full_name|default:request.user.username }}</strong><div class="text-secondary">{{ request.user.get_role_display }}</div></div></div>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{% for field in form %}<div class="mb-3"><label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}<button class="btn btn-primary" type="submit">Save Changes</button></form>
+</div></div></div></div></div>
+{% endblock %}

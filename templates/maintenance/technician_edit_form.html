@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Edit Technician | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8 col-xl-7"><div class="card shadow-sm border-0 rounded-4"><div class="card-body p-4 p-md-5">
+<span class="badge text-bg-primary mb-2">My Technicians</span><h1 class="h3 fw-bold mb-2">Edit Technician Details</h1><p class="text-secondary mb-4">Update {{ technician.name }}'s contact information and work details below.</p>
+<div class="alert alert-info">Username and password are not changed on this page. The technician can update their own login details.</div>
+<form method="post" class="row g-3">{% csrf_token %}{% for field in form %}<div class="{% if field.name == 'description' or field.name == 'available' %}col-12{% else %}col-md-6{% endif %}">{% if field.name == 'available' %}<div class="form-check mt-2">{{ field }} <label class="form-check-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label></div>{% else %}<label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>{% endfor %}{% if form.non_field_errors %}<div class="col-12 alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}<div class="col-12 d-flex flex-wrap gap-2 pt-2"><button type="submit" class="btn btn-primary px-4">Save Changes</button><a href="{% url 'maintenance:technicians' %}" class="btn btn-outline-secondary px-4 text-decoration-none">Cancel</a></div></form>
+</div></div></div></div></div>
+{% endblock %}

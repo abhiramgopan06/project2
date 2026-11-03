@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}403 | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="py-5">
+        <div class="display-1 fw-bold">403</div>
+        <h2 class="fw-bold mt-3">Access Denied</h2>
+        <p class="text-secondary">You do not have permission to access this page.</p>
+        <a class="btn btn-primary" href="{% url 'core:home' %}">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

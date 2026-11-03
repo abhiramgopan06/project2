@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Report Property | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm report-form-card">
+                <div class="card-body p-4 p-lg-5">
+                    <span class="badge report-badge">REPORT LISTING</span>
+                    <h1 class="fw-bold mt-3">Report {{ property.title }}</h1>
+                    <p class="text-secondary">Only the tenant currently renting this property can submit a report.</p>
+                    <div class="alert alert-warning border-0 small">
+                        Please report only genuine problems. Give a clear and specific explanation so the platform team can review it without wasting time on incomplete reports.
+                    </div>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                        {% for field in form %}
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endfor %}
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-report-property">⚠️ Submit Report</button>
+                            <a class="btn btn-outline-secondary" href="{% url 'properties:detail' property.pk %}">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

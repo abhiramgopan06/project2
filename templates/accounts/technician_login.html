@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Technician Login | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card border-0 shadow-sm technician-login-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="text-center mb-4"><div class="technician-login-icon">🔧</div><h2 class="fw-bold mb-1">Technician Login</h2><p class="text-secondary mb-0">Use the username and password provided by your property owner.</p></div>
+          <form method="post">{% csrf_token %}
+            <div class="mb-3"><label class="form-label">Technician Username</label><input class="form-control" type="text" name="username" placeholder="Enter your username" autocomplete="username" required autofocus></div>
+            <div class="mb-3"><label class="form-label">Password</label><input class="form-control" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required></div>
+            <button class="btn btn-primary w-100" type="submit">Login to Technician Dashboard</button>
+          </form>
+          <div class="small text-secondary mt-4 p-3 rounded-3 bg-body-secondary"><strong>Need help?</strong><br>Contact the property owner who created your technician account if you do not know your login details.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

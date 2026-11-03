@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Find Your Next Home | Havenly{% endblock %}
+{% block content %}
+<section class="hero hero-premium py-5">
+    <div class="container py-lg-5 py-3">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="hero-eyebrow"><i class="bi bi-house-check-fill me-2"></i>One place for renting and property care</span>
+                <h1 class="hero-title mt-4">A better way to <span>find home.</span></h1>
+                <p class="hero-copy mt-3">Explore rental listings, send requests with confidence, keep track of rent and get maintenance help when you need it.</p>
+                <form method="get" action="{% url 'properties:list' %}" class="hero-search mt-4">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" placeholder="Search by property or area" aria-label="Search by property or area">
+                    <button type="submit" class="btn btn-primary">Find a home <i class="bi bi-arrow-right ms-1"></i></button>
+                </form>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a class="btn btn-primary btn-lg" href="{% url 'properties:list' %}">Explore properties</a>
+                    {% if not user.is_authenticated %}<a class="btn btn-outline-primary btn-lg" href="{% url 'accounts:register' %}">Create an account</a>{% elif user.role == "OWNER" %}<a class="btn btn-outline-primary btn-lg" href="{% url 'properties:create' %}">List your property</a>{% elif user.role == "TENANT" %}<a class="btn btn-outline-primary btn-lg" href="{% url 'properties:saved' %}">Saved properties</a>{% endif %}
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-panel">
+                    <div class="hero-panel-top"><span class="hero-panel-icon"><i class="bi bi-buildings-fill"></i></span><span class="badge rounded-pill text-bg-light">Made for easier renting</span></div>
+                    <h3 class="mt-4">Your rental journey, organised.</h3>
+                    <p class="text-secondary">From discovering a place to following a repair request, keep important details together.</p>
+                    <div class="hero-feature"><span><i class="bi bi-patch-check-fill"></i></span><div><strong>Verified listings</strong><small>Admin-reviewed property documents</small></div></div>
+                    <div class="hero-feature"><span><i class="bi bi-calendar2-check-fill"></i></span><div><strong>Clear rental requests</strong><small>Follow your request and booking status</small></div></div>
+                    <div class="hero-feature"><span><i class="bi bi-tools"></i></span><div><strong>Maintenance tracking</strong><small>Communicate with owners and technicians</small></div></div>
+                    <div class="hero-metrics mt-4"><div><strong>{{ available_count }}</strong><small>Available listings</small></div><div><strong>{{ verified_count }}</strong><small>Verified listings</small></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="container py-5">
+    <div class="section-heading d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4"><div><span class="section-kicker">Explore homes</span><h2 class="fw-bold mb-1">Featured properties</h2><p class="text-secondary mb-0">A few places to start your search.</p></div><a href="{% url 'properties:list' %}" class="btn btn-outline-primary">View all properties <i class="bi bi-arrow-right ms-1"></i></a></div>
+    <div class="row g-4">
+        {% for property in featured_properties %}
+        <div class="col-md-6 col-xl-4"><article class="card property-card featured-property-card h-100 border-0 shadow-sm">
+            <a href="{% url 'properties:detail' property.pk %}" class="property-image-link" aria-label="View {{ property.title }}">
+                {% if property.primary_image %}<img src="{{ property.primary_image.image.url }}" class="property-cover" alt="{{ property.title }}">{% else %}<div class="property-placeholder"><i class="bi bi-house-door"></i></div>{% endif %}
+            </a>
+            <div class="card-body d-flex flex-column p-4"><div class="d-flex justify-content-between align-items-center gap-2"><span class="badge bg-body-secondary text-body">{{ property.get_property_type_display }}</span>{% if property.verification_status == "VERIFIED" %}<span class="verified-label"><i class="bi bi-patch-check-fill"></i> Verified</span>{% else %}<span class="badge text-bg-success">Available</span>{% endif %}</div><h3 class="h5 fw-bold mt-3 mb-2">{{ property.title }}</h3><p class="text-secondary mb-3"><i class="bi bi-geo-alt me-1"></i>{{ property.location }}</p><div class="mt-auto d-flex justify-content-between align-items-center gap-3"><div><strong class="fs-5">₹{{ property.rent|floatformat:0 }}</strong><small class="text-secondary"> / month</small></div><a class="btn btn-outline-primary" href="{% url 'properties:detail' property.pk %}">View details</a></div></div>
+        </article></div>
+        {% empty %}<div class="col-12"><div class="empty-state-card text-center py-5"><i class="bi bi-houses fs-1"></i><h3 class="h5 mt-3">New listings are on the way</h3><p class="text-secondary mb-3">Check back soon or browse all listings.</p><a href="{% url 'properties:list' %}" class="btn btn-primary">Browse properties</a></div></div>{% endfor %}
+    </div>
+</section>
+<section class="workflow-section py-5"><div class="container"><div class="text-center mb-5"><span class="section-kicker">Simple by design</span><h2 class="fw-bold">Helpful at every step</h2><p class="text-secondary">Tools for the people who make a rental home work.</p></div><div class="row g-4">
+    <div class="col-md-4"><div class="workflow-card"><span class="workflow-icon"><i class="bi bi-search-heart"></i></span><h3 class="h5 fw-bold">For tenants</h3><p class="text-secondary">Discover places, save favourites, request a rental and report maintenance issues.</p><a href="{% url 'properties:list' %}" class="link-primary fw-semibold">Find a property <i class="bi bi-arrow-right"></i></a></div></div>
+    <div class="col-md-4"><div class="workflow-card"><span class="workflow-icon"><i class="bi bi-house-gear"></i></span><h3 class="h5 fw-bold">For owners</h3><p class="text-secondary">Manage listings, review requests, verify documents and coordinate repair work.</p><a href="{% url 'accounts:register' %}" class="link-primary fw-semibold">Get started <i class="bi bi-arrow-right"></i></a></div></div>
+    <div class="col-md-4"><div class="workflow-card"><span class="workflow-icon"><i class="bi bi-wrench-adjustable-circle"></i></span><h3 class="h5 fw-bold">For technicians</h3><p class="text-secondary">Accept assigned work, update progress and keep a record of completed repairs.</p><a href="{% url 'accounts:login' %}" class="link-primary fw-semibold">Technician login <i class="bi bi-arrow-right"></i></a></div></div>
+</div></div></section>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Manage Users | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="badge text-bg-primary">PLATFORM CONTROLS</span>
+      <h1 class="fw-bold mt-2">Manage Users</h1>
+      <p class="text-secondary mb-0">Everyone registered on the platform, with a link to each person's full history.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'core:admin_dashboard' %}">&larr; Dashboard</a>
+  </div>
+
+  <form class="card border-0 shadow-sm p-3 mb-4" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Role</label>
+        <select name="role" class="form-select">
+          <option value="">All roles</option>
+          {% for value, label in roles %}
+          <option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+    </div>
+  </form>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Joined</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for account in users %}
+          <tr>
+            <td class="fw-semibold">{{ account.username }}</td>
+            <td>{{ account.get_full_name|default:"-" }}</td>
+            <td>{{ account.email }}</td>
+            <td>
+              <span class="badge {% if account.role == 'ADMIN' %}text-bg-dark{% elif account.role == 'OWNER' %}text-bg-info{% elif account.role == 'TECHNICIAN' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">
+                {{ account.get_role_display }}
+              </span>
+            </td>
+            <td>{{ account.phone|default:"-" }}</td>
+            <td>{{ account.date_joined|date:"d M Y" }}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{% url 'core:admin_user_detail' account.pk %}">View history</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-secondary py-5">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Manage Properties | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="badge text-bg-primary">PLATFORM CONTROLS</span>
+      <h1 class="fw-bold mt-2">Manage Properties</h1>
+      <p class="text-secondary mb-0">Every listing on the platform, with a link to its full rental history.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'core:admin_dashboard' %}">&larr; Dashboard</a>
+  </div>
+
+  <form class="card border-0 shadow-sm p-3 mb-4" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Availability</label>
+        <select name="available" class="form-select">
+          <option value="">All properties</option>
+          <option value="yes" {% if selected_availability == "yes" %}selected{% endif %}>Available</option>
+          <option value="no" {% if selected_availability == "no" %}selected{% endif %}>Not available</option>
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+    </div>
+  </form>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Title</th><th>Owner</th><th>Location</th><th>Rent</th><th>Rooms</th><th>Available</th><th>Listed</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for property in properties %}
+          <tr>
+            <td class="fw-semibold">{{ property.title }}</td>
+            <td><a href="{% url 'core:admin_user_detail' property.owner.pk %}">{{ property.owner.username }}</a></td>
+            <td>{{ property.location }}</td>
+            <td>₹{{ property.rent }}</td>
+            <td>{{ property.number_of_rooms }}</td>
+            <td>{% if property.available %}<span class="badge text-bg-success">Yes</span>{% else %}<span class="badge text-bg-secondary">No</span>{% endif %}</td>
+            <td>{{ property.created_at|date:"d M Y" }}</td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{% url 'core:admin_property_detail' property.pk %}">View history</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-secondary py-5">No properties found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
