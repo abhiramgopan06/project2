@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.http import HttpResponseForbidden
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -233,15 +234,14 @@ def technician_account(request):
 @login_required
 def technician_tickets(request):
     if request.user.role != "TECHNICIAN":
-        messages.error(request, "Only technicians can access this dashboard.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Technician access is required.")
     tickets = MaintenanceTicket.objects.filter(technician__user=request.user, status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.ACCEPTED, MaintenanceTicket.Status.IN_PROGRESS, MaintenanceTicket.Status.RESOLVED]).select_related("property", "room", "tenant")
     stats = {
         "assigned": tickets.filter(status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.ACCEPTED]).count(),
         "in_progress": tickets.filter(status=MaintenanceTicket.Status.IN_PROGRESS).count(),
         "resolved": tickets.filter(status=MaintenanceTicket.Status.RESOLVED).count(),
     }
-    technician = Technician.objects.select_related("user", "owner").get(user=request.user)
+    technician = Technician.objects.select_related("user", "owner").filter(user=request.user).first()
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)[:5]
     return render(request, "maintenance/technician_tickets.html", {"tickets": tickets, "stats": stats, "technician": technician, "notifications": notifications})
 

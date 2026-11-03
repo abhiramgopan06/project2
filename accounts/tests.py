@@ -124,6 +124,7 @@ class AuthenticationTests(TestCase):
         self.assertLess(html.index("Don't have an account?"), html.index("Continue with Google"))
         self.assertIn(reverse("accounts:google_login"), html)
 
+    @override_settings(GOOGLE_CLIENT_ID="", GOOGLE_CLIENT_SECRET="")
     def test_google_login_without_credentials_shows_a_message_instead_of_crashing(self):
         response = self.client.get(reverse("accounts:google_login"), follow=True)
         self.assertRedirects(response, reverse("accounts:login"))
@@ -132,7 +133,50 @@ class AuthenticationTests(TestCase):
     def test_owner_cannot_open_tenant_dashboard(self):
         self.client.force_login(self.owner)
         response = self.client.get(reverse("accounts:tenant_dashboard"))
-        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
+        self.assertEqual(response.status_code, 403)
+
+
+    def test_dashboard_access_is_restricted_to_the_matching_role(self):
+        from django.urls import reverse
+        from maintenance.models import Technician
+        technician = User.objects.create_user(
+            username="dashboardtech", email="dashboardtech@example.com",
+            password="StrongPass123!", role=User.Role.TECHNICIAN
+        )
+        admin = User.objects.create_superuser(
+            username="dashboardadmin", email="dashboardadmin@example.com",
+            password="StrongPass123!"
+        )
+        Technician.objects.create(
+            owner=self.owner, user=technician, name="Dashboard Technician",
+            email=technician.email, specialization="General"
+        )
+        dashboard_urls = {
+            "tenant": reverse("accounts:tenant_dashboard"),
+            "owner": reverse("accounts:owner_dashboard"),
+            "technician": reverse("maintenance:technician_tickets"),
+            "admin": reverse("core:admin_dashboard"),
+        }
+        users = {
+            "tenant": self.tenant,
+            "owner": self.owner,
+            "technician": technician,
+            "admin": admin,
+        }
+        for user_role, user in users.items():
+            self.client.force_login(user)
+            for dashboard_role, url in dashboard_urls.items():
+                response = self.client.get(url)
+                if user_role == dashboard_role:
+                    self.assertEqual(
+                        response.status_code, 200,
+                        f"{user_role} should access {dashboard_role} dashboard"
+                    )
+                else:
+                    self.assertEqual(
+                        response.status_code, 403,
+                        f"{user_role} must not access {dashboard_role} dashboard"
+                    )
 
     def test_logout_requires_post(self):
         self.client.force_login(self.tenant)

@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import send_mail
 from django.db.models import Q
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -379,16 +379,14 @@ def dashboard(request):
 @login_required
 def admin_dashboard(request):
     if not (request.user.is_superuser or request.user.role == "ADMIN"):
-        messages.error(request, "Access denied.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     return redirect("core:admin_dashboard")
 
 
 @login_required
 def owner_dashboard(request):
     if request.user.role != "OWNER":
-        messages.error(request, "Access denied. Owner access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Owner access is required.")
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)[:5]
     properties = Property.objects.filter(owner=request.user)
     active_bookings = Booking.objects.filter(property__owner=request.user, status=Booking.Status.CONFIRMED).select_related("property", "room")
@@ -413,8 +411,7 @@ def owner_dashboard(request):
 @login_required
 def tenant_dashboard(request):
     if request.user.role != "TENANT":
-        messages.error(request, "Access denied. Tenant access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Tenant access is required.")
     bookings = Booking.objects.filter(tenant=request.user, status=Booking.Status.CONFIRMED).select_related("property", "room")
     today = timezone.localdate()
     active_bookings = [booking for booking in bookings if booking.end_date() >= today]

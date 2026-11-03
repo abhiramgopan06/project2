@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.db.models import Sum
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -107,8 +108,7 @@ def my_reports(request):
 @login_required
 def admin_dashboard(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     context = {
         "total_users": User.objects.count(),
         "owners": User.objects.filter(role=User.Role.OWNER).count(),
@@ -136,8 +136,7 @@ def admin_dashboard(request):
 @login_required
 def admin_reports(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     reports = PropertyReport.objects.select_related("property", "reporter")
     status = request.GET.get("status", "").strip()
     if status in dict(PropertyReport.Status.choices):
@@ -148,8 +147,7 @@ def admin_reports(request):
 @login_required
 def admin_report_update(request, pk):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     report = get_object_or_404(PropertyReport.objects.select_related("property", "reporter"), pk=pk)
     if request.method == "POST":
         status = request.POST.get("status")
@@ -182,8 +180,7 @@ def admin_report_update(request, pk):
 @login_required
 def admin_users(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     users = User.objects.all().order_by("username")
     role = request.GET.get("role", "").strip()
     if role in dict(User.Role.choices):
@@ -198,8 +195,7 @@ def admin_users(request):
 @login_required
 def admin_user_detail(request, pk):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     tenant = get_object_or_404(User, pk=pk)
 
                                                                     
@@ -225,8 +221,7 @@ def admin_user_detail(request, pk):
 @login_required
 def admin_properties(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     properties = Property.objects.select_related("owner").order_by("-created_at")
     availability = request.GET.get("available", "").strip()
     if availability == "yes":
@@ -242,8 +237,7 @@ def admin_properties(request):
 @login_required
 def admin_property_detail(request, pk):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     property_obj = get_object_or_404(Property.objects.select_related("owner"), pk=pk)
     return render(request, "core/admin_property_detail.html", {
         "property": property_obj,
@@ -256,8 +250,7 @@ def admin_property_detail(request, pk):
 @login_required
 def admin_rental_requests(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     requests_qs = RentalRequest.objects.select_related("tenant", "property", "room")
     status = request.GET.get("status", "").strip()
     if status in dict(RentalRequest.Status.choices):
@@ -272,8 +265,7 @@ def admin_rental_requests(request):
 @login_required
 def admin_payments(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     payments = Payment.objects.select_related("tenant", "booking__property")
     status = request.GET.get("status", "").strip()
     if status in dict(Payment.Status.choices):
@@ -288,8 +280,7 @@ def admin_payments(request):
 @login_required
 def admin_maintenance(request):
     if not _admin_only(request):
-        messages.error(request, "Admin access is required.")
-        return redirect("accounts:dashboard")
+        return HttpResponseForbidden("Administrator access is required.")
     tickets = MaintenanceTicket.objects.select_related("tenant", "property", "technician")
     status = request.GET.get("status", "").strip()
     if status in dict(MaintenanceTicket.Status.choices):
